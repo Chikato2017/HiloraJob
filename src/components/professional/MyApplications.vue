@@ -51,7 +51,7 @@
                     <img class="profile-img" src="../../assets/Software.jpg" alt="">
                 </div>
                 <div class="details">
-                    <div>
+                    <div class="name-and-others">
                         <p class="name">{{jobApp.job.employer.company_name}}</p>
                         <h4 class="name-title">{{jobApp.job.title}}</h4>
                         <p class="title">
@@ -63,13 +63,13 @@
                     </div>
                     <p class="salary">₦{{jobApp.job.salary}}</p>
                     <div class="core-skills">
-                        <p>.Data Analysis</p>
-                        <p>.AI Prompt</p>
-                        <p>.CAD</p>
+                        <p v-for="skill in jobApp.skills" :key="skill.id">
+                            {{skill}}
+                        </p>
                     </div>
                 </div>
                 <div class="profile-btns">
-                    <button class="approve">Apply</button>
+                    <p>Status</p>
                 </div>
             </div>
             
@@ -133,6 +133,11 @@ export default {
 </script>
 
 <style scoped>
+    h1, p, h4{
+        margin: 0;
+        padding: 0;
+    }
+
     .my-applications-component{
         display: flex;
         flex-direction: column;
@@ -242,8 +247,14 @@ export default {
         border-radius: 50%;
     }
 
+    .name-and-others{
+        display: flex;
+        flex-direction: column;
+    }
+
     .name{
-        font-size: 14.5px;
+        font-size: 13px;
+        font-weight: 600;
     }
 
     .title{
@@ -263,12 +274,12 @@ export default {
     .core-skills{
         display: flex;
         gap: 5px;
-        color: #ff5524;
+        color: #151d2a;
         font-size: 11.5px;
     }
 
     .core-skills p{
-        background: #f8d9a36b;
+        background: #f59f0b86;
         padding: 3px;
         border-radius: 3px;
     }
@@ -293,5 +304,10 @@ export default {
         border: 1px solid #b7becad7;
         color: white;
         border-radius: 10px;
+    }
+
+    .profile-btns{
+        font-size: 13px;
+        width: 10%;
     }
 </style>

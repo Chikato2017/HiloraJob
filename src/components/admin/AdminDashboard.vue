@@ -105,7 +105,7 @@
                     </div>
                     <div v-for="professional in notApprovedProfessionals" :key="professional.id" class="profiles">
                         <div class="img">
-                            <img class="profile-img" src="../../assets/Ayo.jpg" alt="">
+                            <img class="profile-img" :src="professional.profile_img || '../../assets/Ayo.jpg'" alt="Profile picture">
                         </div>
                         <div class="details">
                             <div class="top">
@@ -129,7 +129,7 @@
                     </div>
                     <div v-for="company in notApprovedCompanies" :key="company.id" class="profiles">
                         <div class="img">
-                            <img class="profile-img" src="../../assets/Ayo.jpg" alt="">
+                            <img class="profile-img" :src="company.profile_img || '../../assets/Ayo.jpg'" alt="Profile picture">
                         </div>
                         <div class="details">
                             <div class="top">
@@ -423,9 +423,7 @@ export default {
     }
 
     .about{
-        padding: 10px;
         border-radius: 10px;
-        background: #9ca3af75;
         font-size: 11.5px;
     }
 

@@ -8,9 +8,7 @@
                 </div>
                 <p class="text-p">Select any job opening to run the Hilora algorithm and match verified professionals by required skill sets.</p>
             </div>
-            <div class="button-container">
-                <button class="reg-prof">Post New Job</button>
-            </div>
+            
         </div>
         <div class="verification-bar">
             <div class="verification-stages">
@@ -45,9 +43,13 @@
 
                 </div>
                 <div class="profile-btns">
-                    <button class="inspect">4 Qualified Talents</button>
-                    <button class="approve approve-cmp">Match Candidates</button>
+                    <button v-if="professionals" class="inspect">
+                        {{professionals.length}} Qualified Talents</button>
+                    <button @click="displayProf" class="approve approve-cmp">Match Candidates</button>
                 </div>
+            </div>
+            <div class="view-professionals-container" @click.self="close">
+                <ViewProfessionals v-if="professionals" :professionals="professionals" @close="close"/>
             </div>
             
         </div>
@@ -55,9 +57,24 @@
 </template>
 
 <script>
+import ViewProfessionals from '../modal/ViewProfessionals'
+
 export default {
     name: 'AdminJobOpenings',
-    props: ['jobs'],
+    props: ['jobs', 'professionals'],
+    components: {
+        ViewProfessionals
+    },
+    methods: {
+        displayProf(){
+            const modalProfessional = document.querySelector(".view-professionals-container")
+            modalProfessional.style.display = "flex"
+        },
+        close(){
+            const modalProfessional = document.querySelector(".view-professionals-container")
+            modalProfessional.style.display = "none"
+        },
+    },
 }
 </script>
 
@@ -263,5 +280,20 @@ export default {
         border-radius: 10px;
         width: 100%;
         font-size: 12px;
+    }
+
+    .view-professionals-container{
+        width: 100vw;
+        height: 100vh;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 500;
+        justify-content: center; 
+        align-items: center; 
+        background: #adb1b96c;
+        backdrop-filter: blur(1px);
+        -webkit-backdrop-filter: blur(10px);
+        display: none;
     }
 </style>

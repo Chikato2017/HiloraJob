@@ -9,8 +9,9 @@
                 <p class="top-p">Manage your posted positions, track incoming verified applicants, 
                     and initiate skill matches.</p>
             </div>
-            <div class="top-block-btn">
-                <button @click="addJob" class="post-btn">Post New Job</button>
+            <div v-if="profileDetails" class="top-block-btn">
+                <button  v-if="profileDetails.is_verified?.includes('Verified')"
+                @click="addJob" class="post-btn">Post New Job</button>
             </div>
         </div>
         <div class="stats">
@@ -58,10 +59,10 @@
                 id="">
             </div>
             <div class="job-type-search">
-                <select name="job-types" id="job-types">
+                <select name="job-types" id="job-types" v-model="selectedType">
                     <option value="all" selected>All Job Types</option>
-                    <option value="full">Full Time</option>
-                    <option value="part">Part-Time</option>
+                    <option value="full-time">Full Time</option>
+                    <option value="part-time">Part Time</option>
                     <option value="remote">Remote</option>
                     <option value="contract">Contract</option>
                 </select>
@@ -75,7 +76,7 @@
             </div>
         </div>
         <div class="profiles-container">
-            <div class="profile" v-for="job in my_jobs" :key="job.id">
+            <div class="profile" v-for="job in filteredMyJobs" :key="job.id">
                 <div class="details">
                     <div class="name-and-others">
                         <div class="name">{{job.title}} • <span class="job_type">
@@ -101,13 +102,9 @@
                             <p>1</p>
                             <p>Applicant</p>
                         </div>
-                        <div class="info">
-                            <p>4</p>
-                            <p>Shortlisted</p>
-                        </div>
                     </div>
                     <div class="profile-btns">
-                        <button class="inspect">Edit Job</button>
+                        <button @click="editJob(job)" class="inspect">Edit Job</button>
                         <button class="approve approve-cmp">Candidate Pipeline</button>
                     </div>
                 </div>
@@ -117,24 +114,45 @@
             <AddJobs v-bind:profileDetails="profileDetails" v-bind:userEmail="userEmail"  
             @close="close"/>
         </div>
+        <div class="editjobs-container" @click.self="closeEdit">
+            <EditJobs v-bind:profileDetails="profileDetails" 
+            v-bind:job="job" @close="closeEdit"/>
+        </div>
     </div>
 </template>
 
 <script>
 import {supabase} from '../../supabase-client.ts'
 import AddJobs from '../modal/AddJobs'
+import EditJobs from '../modal/EditJobs'
 
 export default {
     name: 'EmployerJobopenings',
     props: ['profileDetails', 'userEmail'],
+    emits: ['reload'],
     components: {
-        AddJobs
+        AddJobs,
+        EditJobs
     },
     data(){
         return{
             my_jobs: [],
             professionals: [],
-            employer: null,
+            employerId: null,
+            selectedType: 'all',
+            job: null,
+        }
+    },
+    computed: {
+        // 5. This computed property dynamically filters the visibility stream
+        filteredMyJobs() {
+            if (this.selectedType === 'all') {
+                return this.my_jobs;
+            }
+            // Case-insensitive match comparing choice parameters directly
+            return this.my_jobs.filter(my_job => {
+                return my_job.job_type?.toLowerCase() === this.selectedType.toLowerCase();
+            });
         }
     },
     async mounted(){
@@ -152,9 +170,9 @@ export default {
 
             if (profileError) throw profileError;
             
-            this.employer = employerProfile.id;
+            this.employerId = employerProfile.id;
 
-            this.fetchEmployer()
+            this.fetchJobs()
 
             const { data: profProfile, error: profError } = await supabase
             .from("Professional")
@@ -176,15 +194,27 @@ export default {
             modalAddJob.style.display = "flex"
         },
         close(){
-            this.fetchEmployer()
+            this.fetchJobs() 
             const modalAddJob = document.querySelector(".addjobs-container")
             modalAddJob.style.display = "none"
+            this.$emit('reload')
         },
-        async fetchEmployer(){
+        editJob(job){
+            this.job = job
+            const modalEditJob = document.querySelector(".editjobs-container")
+            modalEditJob.style.display = "flex"
+        },
+        closeEdit(){
+            this.fetchJobs() 
+            const modalEditJob = document.querySelector(".editjobs-container")
+            modalEditJob.style.display = "none"
+            this.$emit('reload')
+        },
+        async fetchJobs(){
             const { data, error } = await supabase
             .from("Job")
             .select("*")
-            .eq("employer", this.employer)
+            .eq("employer", this.employerId)
             .order("id", { ascending: false })
             if (error) throw error
 
@@ -446,6 +476,21 @@ export default {
     }
 
     .addjobs-container{
+        width: 100vw;
+        height: 100vh;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 500;
+        justify-content: center; 
+        align-items: center; 
+        background: #adb1b96c;
+        backdrop-filter: blur(1px);
+        -webkit-backdrop-filter: blur(10px);
+        display: none;
+    }
+
+    .editjobs-container{
         width: 100vw;
         height: 100vh;
         position: fixed;

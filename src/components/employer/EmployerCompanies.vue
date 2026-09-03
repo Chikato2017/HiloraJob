@@ -9,17 +9,6 @@
                 <p class="top-p">Browse vetted and compliance-checked companies,
                      and their profiles.</p>
             </div>
-            <div class="top-block-btn">
-                <div class="job-type-search">
-                    <select name="job-types" id="job-types">
-                        <option value="all" selected>Job Type</option>
-                        <option value="full">Full Time</option>
-                        <option value="part">Part-Time</option>
-                        <option value="remote">Remote</option>
-                        <option value="contract">Contract</option>
-                    </select>
-                </div>
-            </div>
         </div>
         <div class="verification-bar">
             <div class="verification-stages">
@@ -35,15 +24,6 @@
                 <input type="search" name="" placeholder="Search Jobs & Skills..." 
                 id="">
             </div>
-            <div class="job-type-search">
-                <select name="job-types" id="job-types">
-                    <option value="all" selected>Job Type</option>
-                    <option value="full">Full Time</option>
-                    <option value="part">Part-Time</option>
-                    <option value="remote">Remote</option>
-                    <option value="contract">Contract</option>
-                </select>
-            </div>
             <div class="sort-search">
                 <select name="sort" id="sort">
                     <option value="all" selected>All Statuses</option>
@@ -55,7 +35,7 @@
         <div class="profiles-container">
             <div class="profile" v-for="company in companies" v-bind:key="company.id">
                 <div class="details">
-                    <img class="img" src="../../assets/benz.jpg" alt="">
+                    <img class="img" :src="company.profile_img || '../../assets/Ayo.jpg'" alt="Profile picture">
                     <div class="name-and-others">
                         <div class="name">{{company.company_name}}</div>
                         <div class="discipline-tag">
@@ -65,9 +45,7 @@
                             {{company.address}}
                         </div>
                     </div>
-                    <p class="status-p">
-                        VISIBLE
-                    </p>
+                    
                 </div>
                 <div class="about">
                     {{company.about}}
@@ -78,57 +56,68 @@
                 </div>
                 <div class="profile-btns">
                     <button @click="displayProf(company)" class="inspect">View Profile</button>
-                    <button class="approve approve-cmp">View Jobs</button>
+                    <button @click="displayJobs(company)" class="approve approve-cmp">View Jobs</button>
                 </div>
             </div>
             <div class="view-employer-container" @click.self="close">
                 <ViewEmployer v-if="employerProfile" v-bind:employerProfile="employerProfile" @close="close"/>
+            </div>
+            <div class="view-job-container" @click.self="closeJob">
+                <ViewJobs v-if="company_jobs" :company_jobs="company_jobs" :company_view="company_view"
+                 @close="closeJob"/>
             </div>
         </div>
     </div>
 </template>
 
 <script>
-import {supabase} from '../../supabase-client.ts'
+//import {supabase} from '../../supabase-client.ts'
 import ViewEmployer from '../modal/ViewEmployer'
+import ViewJobs from '../modal/ViewJobs'
 
 export default {
     name: 'EmployerCompanies',
+    props: ['jobs', 'companies'],
     components: {
-        ViewEmployer
+        ViewEmployer,
+        ViewJobs,
     },
     data(){
         return{
-            companies: [],
             employerProfile: null,
-        }
-    },
-    async mounted(){
-        try {
-            const { data, error } = await supabase
-            .from("Employer")
-            .select("*")
-            .eq('is_verified', 'Verified')
-            .order("id", { ascending: false })
-
-            if (error) throw error
-
-            this.companies = data || []
-        } catch (err) {
-            console.error("Error fetching tasks:", err.message)
+            company_jobs: [],
+            company_view: null,
         }
     },
     methods: {
-        displayProf(professional){
-            this.employerProfile = professional
+        displayProf(company){
+            this.employerProfile = company
             const modalEmployer = document.querySelector(".view-employer-container")
             modalEmployer.style.display = "flex"
+        },
+        displayJobs(company){
+            if (!this.jobs || !Array.isArray(this.jobs)) {
+                this.company_jobs = [];
+            } 
+            else {
+                this.company_jobs = this.jobs.filter(job => {
+                    return job.employer === company.id
+                })
+                
+            }
+            this.company_view = company
+            const modalJobs = document.querySelector(".view-job-container")
+            modalJobs.style.display = "flex"
         },
         close(){
             const modalEmployer = document.querySelector(".view-employer-container")
             modalEmployer.style.display = "none"
             this.employerProfile = null
         },
+        closeJob(){
+            const modalJobs = document.querySelector(".view-job-container")
+            modalJobs.style.display = "none"
+        }
     }
 }
 </script>
@@ -426,7 +415,7 @@ export default {
         font-size: 13px;
     }
 
-    .view-employer-container{
+    .view-employer-container, .view-job-container{
         width: 100vw;
         height: 100vh;
         position: fixed;

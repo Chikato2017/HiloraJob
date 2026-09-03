@@ -1,7 +1,7 @@
 <template>
     <div v-if="profProfile" class="prof-profile-modal">
         <div class="details">
-            <img class="img" src="../../assets/Christina.jpg" alt="">
+            <img class="img" :src="profProfile.profile_img || '../../assets/Ayo.jpg'" alt="Profile picture">
             <div class="name-and-others">
                 <div class="name">{{profProfile.full_name}}</div>
                 <div class="discipline-tag">
@@ -9,12 +9,9 @@
                     <span class="years">• {{profProfile.years_of_experience}} yrs exp</span>
                 </div>
                 <div class="location">
-                    {{profProfile.location}}
+                    {{profProfile.location}} • <p class="status-p">{{profProfile.type}}</p>
                 </div>
             </div>
-            <p class="status-p">
-                {{profProfile.type}}
-            </p>
             <div class="close-modal">
                 <img @click="$emit('close')" class="close-img" src="../../assets/close.svg" alt="">
             </div>
@@ -80,7 +77,9 @@ export default {
     }
 
     .name-and-others{
-        width: 60%;
+        width: 70%;
+        display: flex;
+        flex-direction: column;
     }
 
     .name{
@@ -105,15 +104,15 @@ export default {
     }
 
     .status-p{
+        margin-top: 4px;
         font-size: 11.5px;
         background: #b1b9c548;
-        padding: 5px 10px 5px 10px;
+        padding: 4px;
         border-radius: 10px;
         align-self: flex-start;
         font-weight: 600;
-        width: 20%;
         text-align: center;
-        align-self: center;
+        width: fit-content;
     }
 
     .about{
@@ -177,7 +176,6 @@ export default {
     }
 
    .close-modal{
-        position: fixed;
         top: 118px;
         right: 390px;
         padding: 0px 10px 10px 10px;

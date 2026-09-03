@@ -4,7 +4,7 @@
             <div class="text">
                 <div class="text-heading">
                     <h1>Registered Companies & Hiring Employers</h1>
-                    <div class="total">9 Total</div>
+                    <div v-if="companies" class="total">{{companies.length}} Total</div>
                 </div>
                 <p class="text-p">Verify corporate incorporation & tax credentials to activate their job listings on the Hilora network..</p>
             </div>
@@ -35,7 +35,7 @@
                             {{company.address}}
                         </div>
                     </div>
-                    <p v-if="company.is_verified.includes('Verified')" class="status-p">
+                    <p v-if="company.is_verified?.includes('Verified')" class="status-p">
                         {{company.is_verified}}
                     </p>
                 </div>

@@ -46,9 +46,12 @@
                 <input type="date" v-model="deadline" name="education" id="" placeholder="">
             </div>
             <div class="input">
-                <input class="input-btn" type="submit" value="Add Job">
+                <input class="input-btn" type="submit" value="Edit Job">
             </div>
         </form>
+        <div v-if="job" class="input">
+            <button @click="deleteJob(job.id)" class="delete-btn">Delete Job</button>
+        </div>
     </div>
     
 </template>
@@ -57,14 +60,14 @@
 import {supabase} from '../../supabase-client.ts'
 
 export default {
-    name: 'AddJobs',
-    props: ['profileDetails', 'userEmail'],
+    name: 'EditJobs',
+    props: ['profileDetails', 'userEmail', 'job'],
     emits: ['close'],
     data(){
         return{
+            id: '',
             title: '',
             description: '',
-            employer: '',
             salary: '',
             location: '',
             job_type: '',
@@ -72,7 +75,40 @@ export default {
             requirements: '',
         }
     },
+    watch: {
+        job: {
+            handler(newJob) {
+                if (newJob) {
+                    this.mapJobData(newJob);
+                }
+            },
+            immediate: true // Forces it to map immediately if the prop exists right away
+        }
+    },
+    mounted(){
+        if(this.job){
+            this.mapJobData(this.job);
+        }
+    },
     methods: {
+        mapJobData(jobData) {
+            this.id = jobData.id || '';
+            this.title = jobData.title || '';
+            this.description = jobData.description || '';
+            this.salary = jobData.salary 
+            this.location = jobData.location || '';
+            this.job_type = jobData.job_type || '';
+            this.deadline = jobData.deadline || '';
+            
+            // Convert database array ["Vue", "Node"] into editable text "Vue, Node"
+            if (jobData.requirements) {
+                this.requirements = Array.isArray(jobData.requirements)
+                    ? jobData.requirements.join(', ')
+                    : jobData.requirements;
+            } else {
+                this.requirements = '';
+            }
+        },
         async onSubmit(e){
             e.preventDefault()
 
@@ -81,7 +117,7 @@ export default {
                     ? this.requirements.split(',').map(skill => skill.trim()).filter(Boolean)
                     : [];
 
-                const {data, error} = await supabase.from("Job").insert({
+                const {data, error} = await supabase.from("Job").update({
                     title: this.title,
                     location: this.location,
                     description: this.description,
@@ -90,16 +126,17 @@ export default {
                     deadline: this.deadline,
                     job_type: this.job_type,
                     employer: this.profileDetails.id,
-                });
-
+                })
+                .eq("id", this.id)
                 if (error) throw error;
                 if (data){
                     console.log("successfully saved profile")
                 }
+
+                alert("Successfully edited Job details");
                 this.clearform()
                 this.$emit('close')
                 
-
             }catch(err){
                 console.error("Error matching user state:", err.message)
             }
@@ -110,8 +147,23 @@ export default {
             this.description = '',
             this.salary = '',
             this.requirements = '',
-            this.deadline = '',
-            this.job_type = ''
+            this.deadline = ''
+        },
+        async deleteJob(id){
+            try {
+                const { error } = await supabase
+                .from("Job")
+                .delete()
+                .eq("id", id)
+                
+                if (error) throw error
+
+                this.$emit('close')
+                alert("Delete successful");
+            } catch (err) {
+                console.error("Error deleting task:", err.message)
+                alert(err.message)
+            }
         }
     }
 }
@@ -128,7 +180,7 @@ export default {
         max-height: 75vh;
         display: flex;
         flex-direction: column;
-        gap: 25px;
+        gap: 15px;
         box-sizing: border-box;
         overflow-y: auto; 
     }
@@ -206,5 +258,15 @@ export default {
         color: white;
         cursor: pointer;
         font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .delete-btn{
+        background: red;
+        width: 100%;
+        color: white;
+        cursor: pointer;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        padding: 10px;
+        border-radius: 4px;
     }
 </style>

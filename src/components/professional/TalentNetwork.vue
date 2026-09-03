@@ -17,10 +17,10 @@
                 id="">
             </div>
             <div class="job-type-search">
-                <select name="job-types" id="job-types">
+                <select name="job-types" id="job-types" v-model="selectedType">
                     <option value="all" selected>Professional Types</option>
-                    <option value="full">Full Time</option>
-                    <option value="part">Part-Time</option>
+                    <option value="full-time">Full Time</option>
+                    <option value="part-time">Part Time</option>
                     <option value="remote">Remote</option>
                     <option value="contract">Contract</option>
                 </select>
@@ -34,9 +34,9 @@
             </div>
         </div>
         <div class="profiles">
-            <div class="profile" v-for="professional in professionals" v-bind:key="professional.id">
+            <div class="profile" v-for="professional in filteredProfessionals" v-bind:key="professional.id">
                 <div class="details">
-                    <img class="img" src="../../assets/Christina.jpg" alt="">
+                    <img class="img" :src="professional.profile_img || '../../assets/Ayo.jpg'" alt="Profile picture">
                     <div class="name-and-others">
                         <div class="name">{{professional.full_name}}</div>
                         <div class="discipline-tag">
@@ -52,7 +52,7 @@
                     </p>
                 </div>
                 <div class="about">
-                    {{professional.bio}}
+                    {{ professional.bio?.length > 70 ? professional.bio.slice(0, 70) + '...' : professional.bio }}
                 </div>
                 <div class="skills">
                     <p v-for="skill in professional.skills" :key="skill.id">
@@ -73,34 +73,36 @@
 </template>
 
 <script>
-import {supabase} from '../../supabase-client.ts'
+//import {supabase} from '../../supabase-client.ts'
 import ViewProfessional from '../modal/ViewProfessional'
 
 export default {
     name: 'TalentNetwork',
+    props: ['professionals'],
     components: {
         ViewProfessional
     },
     data(){
         return{
-            professionals: [],
+            //professionals: [],
             profProfile: null,
+            selectedType: 'all',
+        }
+    },
+    computed: {
+        // 5. This computed property dynamically filters the visibility stream
+        filteredProfessionals() {
+            if (this.selectedType === 'all') {
+                return this.professionals;
+            }
+            // Case-insensitive match comparing choice parameters directly
+            return this.professionals.filter(professional => {
+                return professional.type?.toLowerCase() === this.selectedType.toLowerCase();
+            });
         }
     },
     async mounted(){
-        try {
-            const { data, error } = await supabase
-            .from("Professional")
-            .select("*")
-            .eq('is_verified', 'Approved')
-            .order("id", { ascending: false });
-
-            if (error) throw error
-
-            this.professionals = data || []
-        } catch (err) {
-            console.error("Error fetching tasks:", err.message)
-        }
+        
     },
     methods: {
         displayProf(professional){
@@ -274,6 +276,7 @@ export default {
         width: 40px;
         height: 40px;
         border-radius: 50%;
+        font-size: 10px;
     }
 
     .name-and-others{

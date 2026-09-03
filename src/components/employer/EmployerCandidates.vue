@@ -4,7 +4,7 @@
             <div class="top-block-text">
                 <div class="top-text">
                     <h1>Candidate Pipeline & Shortlist</h1>
-                    <p>7 Active</p>
+                    <p v-if="candidates">{{candidates.length}} Active</p>
                 </div>
                 <p class="top-p">Review verified applicant dossiers, evaluate 
                     calculated skill matches, and shortlist top talent for interviews.</p>
@@ -44,80 +44,31 @@
             </div>
         </div>
         <div class="profiles-container">
-            <div class="profile">
+            <div v-for="app in candidates" :key="app.id" class="profile">
                 <div class="details">
                     <div class="name-and-others">
-                        <div class="name">Sarah Adeyemi</div>
+                        <div class="name">{{app.professional.full_name}}</div>
+                        <div class="title">{{app.professional.title}}</div>
                         <div class="discipline-tag">
-                           Core Banking Engineering • Remote • London, UK • Senior
+                           <strong>Job Applied For: </strong> 
+                           <span class="job-title">{{app.job.title}}</span>
                         </div>
                     </div>
                     <p class="status-p">
-                        ₦450,000/month
+                       Job expected Salary: <span class="price">₦{{app.job.salary}}/month</span>
                     </p>
                 </div>
                 <div class="about">
-                    Lead engineer specializing in distributed React & Node.js 
-                    microservices, GraphQL, and AWS cloud infrastructure. Led
-                    Lead engineer specializing in distributed React & Node.js 
-                    microservices, GraphQL, and AWS cloud infrastructure. Led
+                    {{app.professional.bio}}
                 </div>
                 <div class="skills">
-                    <p>.Data Analysis</p>
-                    <p>.AI Prompt</p>
-                    <p>.CAD</p>
+                   <p v-for="skill in app.job.requirements" :key="skill.id">
+                        {{skill}}
+                   </p>
                 </div>
                 <div class="profile-bottom">
                     <div class="job-info">
-                        <div class="info">
-                            <p>1</p>
-                            <p>Applicant</p>
-                        </div>
-                        <div class="info">
-                            <p>4</p>
-                            <p>Shortlisted</p>
-                        </div>
-                    </div>
-                    <div class="profile-btns">
-                        <button class="inspect">View Info</button>
-                        <button class="approve approve-cmp">Candidate Pipeline</button>
-                    </div>
-                </div>
-                
-            </div>
-            <div class="profile">
-                <div class="details">
-                    <div class="name-and-others">
-                        <div class="name">High-Performance Backend Golang Developer</div>
-                        <div class="discipline-tag">
-                           Core Banking Engineering • Remote • London, UK • Senior
-                        </div>
-                    </div>
-                    <p class="status-p">
-                        ₦10,000,000/year
-                    </p>
-                </div>
-                <div class="about">
-                    Lead engineer specializing in distributed React & Node.js 
-                    microservices, GraphQL, and AWS cloud infrastructure. Led
-                    Lead engineer specializing in distributed React & Node.js 
-                    microservices, GraphQL, and AWS cloud infrastructure. Led
-                </div>
-                <div class="skills">
-                    <p>.Data Analysis</p>
-                    <p>.AI Prompt</p>
-                    <p>.CAD</p>
-                </div>
-                <div class="profile-bottom">
-                    <div class="job-info">
-                        <div class="info">
-                            <p>1</p>
-                            <p>Applicant</p>
-                        </div>
-                        <div class="info">
-                            <p>4</p>
-                            <p>Shortlisted</p>
-                        </div>
+                        Experience: {{app.professional.years_of_experience}}
                     </div>
                     <div class="profile-btns">
                         <button class="inspect">View Info</button>
@@ -125,6 +76,7 @@
                     </div>
                 </div>
             </div>
+            
         </div>
     </div>
 </template>
@@ -132,6 +84,27 @@
 <script>
 export default {
     name: 'EmployerCandidates',
+    props: ['profileDetails', 'professionals', 'jobs', 'jobApplications'],
+    data(){
+        return{
+
+        }
+    },
+    computed: {
+        candidates(){
+            if (!this.profileDetails || !this.jobs || !this.jobApplications) {
+                return [];
+            }
+            return this.jobApplications.filter(jobApp => {
+                return jobApp.job.employer === this.profileDetails.id;
+            })
+        }
+    },
+    async mounted(){
+        
+        
+    },
+    
 }
 </script>
 
@@ -177,7 +150,7 @@ export default {
         border-radius: 5px;
     }
 
-    .top-p{
+    .top-p, .title{
         font-size: 13px;
     }
 
@@ -189,6 +162,11 @@ export default {
         display: flex;
         gap: 15px;
         justify-content: space-between;
+    }
+
+    .job-title{
+        color: #2563eb;
+        font-weight: 600;
     }
 
     .professionals, .companies, .openings, .percentage{
@@ -364,6 +342,10 @@ export default {
         font-weight: 600;
     }
 
+    .price{
+        color: #ff5524;
+    }
+
     .about{
         padding: 10px;
         border-radius: 10px;
@@ -417,6 +399,8 @@ export default {
     .job-info{
         display: flex;
         width: 60%;
+        font-size: 13px;
+        align-items: center;
     }
 
     .job-info p{

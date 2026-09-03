@@ -172,6 +172,8 @@ textarea{
     border-radius: 5px;
     padding: 10px 5px 10px 5px;
     box-sizing: border-box;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 14px;
 }
 
 .group{

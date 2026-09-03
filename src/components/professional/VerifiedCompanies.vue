@@ -11,12 +11,8 @@
             </div>
             <div class="right">
                 <div class="no-of-matches">
-                    <h4 class="five">5</h4>
-                    <p>High Skill Matches (>70%)</p>
-                </div>
-                <div class="no-of-applications">
-                    <h4 class="two">2</h4>
-                    <p>Applications Submitted</p>
+                    <h4 v-if="companies" class="five">{{companies.length}}</h4>
+                    <p>Verified Companies</p>
                 </div>
             </div>
         </div>
@@ -57,54 +53,48 @@
                         </div>
                     </div>
                     <p class="status-p">
-                        VISIBLE
+                        {{company.is_verified}}
                     </p>
                 </div>
                 <div class="about">
-                    {{company.about}}
+                    {{ company.about?.length > 70 ? company.about.slice(0, 70) + '...' : company.about }}
                 </div>
                 <div class="skills">
-                    Job Openings
+                    Company Size:<span class="size">{{company.company_size}}</span>
                 </div>
                 <div class="profile-btns">
                     <button @click="displayProf(company)" class="inspect">View Profile</button>
-                    <button class="approve approve-cmp">View Jobs</button>
+                    <button @click="displayJobs(company)" class="approve approve-cmp">View Jobs</button>
                 </div>
             </div>
         </div>
         <div class="view-employer-container" @click.self="close">
             <ViewEmployer v-if="employerProfile" v-bind:employerProfile="employerProfile" @close="close"/>
         </div>
+        <div class="view-job-container" @click.self="closeJob">
+            <ViewJobs v-if="company_jobs" :company_jobs="company_jobs" :company_view="company_view"
+            :profileDetails="profileDetails" @close="closeJob"/>
+        </div>
     </div>
 </template>
 
 <script>
-import {supabase} from '../../supabase-client.ts'
+//import {supabase} from '../../supabase-client.ts'
 import ViewEmployer from '../modal/ViewEmployer'
+import ViewJobs from '../modal/ViewJobs'
 
 export default {
     name: 'VerifiedCompanies',
+    props: ['companies', 'jobs', 'profileDetails'],
     components: {
-        ViewEmployer
+        ViewEmployer,
+        ViewJobs,
     },
     data(){
         return{
-            companies: [],
             employerProfile: null,
-        }
-    },
-    async mounted(){
-        try {
-            const { data, error } = await supabase
-            .from("Employer")
-            .select("*")
-            .order("id", { ascending: false })
-
-            if (error) throw error
-
-            this.companies = data || []
-        } catch (err) {
-            console.error("Error fetching tasks:", err.message)
+            company_jobs: [],
+            company_view: null,
         }
     },
     methods: {
@@ -113,11 +103,29 @@ export default {
             const modalEmployer = document.querySelector(".view-employer-container")
             modalEmployer.style.display = "flex"
         },
+        displayJobs(company){
+            if (!this.jobs || !Array.isArray(this.jobs)) {
+                this.company_jobs = [];
+            } 
+            else {
+                this.company_jobs = this.jobs.filter(job => {
+                    return job.employer === company.id
+                })
+                
+            }
+            this.company_view = company
+            const modalJobs = document.querySelector(".view-job-container")
+            modalJobs.style.display = "flex"
+        },
         close(){
             const modalEmployer = document.querySelector(".view-employer-container")
             modalEmployer.style.display = "none"
             this.employerProfile = null
         },
+        closeJob(){
+            const modalJobs = document.querySelector(".view-job-container")
+            modalJobs.style.display = "none"
+        }
     }
 }
 </script>
@@ -150,18 +158,19 @@ export default {
     }
 
     .left{
-        width: 70%;
+        width: 85%;
         align-content: center;
     }
 
     .right{
-        width: 30%;
+        width: 15%;
         display: flex;
         gap: 10px;
         background: #4b658b5e;
         border-radius: 10px;
         border: 1px solid #80a3d85e;
         padding: 15px;
+        justify-content: center;
     }
 
     .left-h1{
@@ -311,13 +320,17 @@ export default {
         display: flex;
         font-size: 11.5px;
         font-weight: 600;
-        gap: 10px;
+        gap: 5px;
     }
 
     .skills p{
         background: #f59f0bbb;
         padding: 1px 5px 1px 5px;
         border-radius: 5px;
+    }
+
+    .size{
+        color: #ff5524;
     }
 
     .profile-btns{
@@ -344,7 +357,7 @@ export default {
         width: 100%;
     }
 
-    .view-employer-container{
+    .view-employer-container, .view-job-container{
         width: 100vw;
         height: 100vh;
         position: fixed;
@@ -358,4 +371,5 @@ export default {
         -webkit-backdrop-filter: blur(10px);
         display: none;
     }
+
 </style>

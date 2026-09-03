@@ -26,7 +26,7 @@
                  class="profiles">
                     <div class="details">
                         <div class="img">
-                            <img class="profile-img" src="../../assets/Chan.png" alt="">
+                            <img class="profile-img" :src="professional.profile_img || '../../assets/Ayo.jpg'" alt="Profile picture">
                         </div>
                         <div>
                             <h4 class="name">{{professional.full_name}}</h4>

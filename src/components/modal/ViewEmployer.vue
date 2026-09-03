@@ -11,9 +11,6 @@
                     {{employerProfile.address}} 
                 </div>
             </div>
-            <p class="status-p">
-                VISIBLE
-            </p>
             <div class="close-modal">
                 <img @click="$emit('close')" class="close-img" src="../../assets/close.svg" alt="">
             </div>
@@ -102,9 +99,7 @@ export default {
     }
 
     .about{
-        padding: 10px;
         border-radius: 10px;
-        background: #9ca3af75;
         font-size: 13px;
         display: flex;
         flex-direction: column;
@@ -127,7 +122,6 @@ export default {
     }
 
     .close-modal{
-        position: absolute;
         top: 150px;
         right: 390px;
         padding: 0px 10px 10px 10px;

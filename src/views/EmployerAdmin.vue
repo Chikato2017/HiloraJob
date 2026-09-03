@@ -5,7 +5,9 @@
             <EmployerSidebar />
         </div>
         <div class="right-side">
-            <router-view v-bind:profileDetails="profileDetails" v-bind:userEmail="userEmail" @update-profile="updateProfile">
+            <router-view v-bind:profileDetails="profileDetails" v-bind:userEmail="userEmail" 
+            @update-profile="updateProfile" :jobs="jobs" :companies="companies" 
+            :professionals="professionals" :jobApplications="jobApplications" @reload="reload">
 
             </router-view>
         </div>
@@ -28,10 +30,18 @@ export default {
         return{
             userEmail: '',
             profileDetails: null,
+            jobs: [],
+            companies: [],
+            professionals: [],
+            jobApplications: [],
         }
     },
     async mounted(){
         this.fetchEmployer()
+        this.fetchJobs()
+        this.fetchEmployers()
+        this.fetchProfessionals()
+        this.fetchApplications()
     },
     methods:{
         async updateProfile(updateProfile){
@@ -46,6 +56,9 @@ export default {
                     address: updateProfile.address,
                     company_size: updateProfile.company_size,
                     about: updateProfile.about,
+                    tax_no: updateProfile.tax_no,
+                    profile_img: updateProfile.profile_img,
+                    reg_doc: updateProfile.reg_doc,
                 })
                 .eq("id", this.profileDetails.id);
 
@@ -79,6 +92,71 @@ export default {
             } catch (err) {
                 console.error("Error matching user state:", err.message)
             }
+        },
+        async fetchJobs(){
+            try {
+                const { data, error } = await supabase
+                .from("Job")
+                .select("*")
+                .order("id", { ascending: false })
+
+                if (error) throw error
+
+                this.jobs = data || []
+            } catch (err) {
+                console.error("Error fetching tasks:", err.message)
+            }
+        },
+        async fetchEmployers(){
+            try {
+                const { data, error } = await supabase
+                .from("Employer")
+                .select("*")
+                .eq('is_verified', 'Verified')
+                .order("id", { ascending: false })
+
+                if (error) throw error
+
+                this.companies = data || []
+            } catch (err) {
+                console.error("Error fetching tasks:", err.message)
+            }
+        },
+        async fetchProfessionals(){
+             try {
+                const { data, error } = await supabase
+                .from("Professional")
+                .select("*")
+                .eq('is_verified', 'Approved')
+                .order("id", { ascending: false })
+
+                if (error) throw error
+
+                this.professionals = data || []
+            } catch (err) {
+                console.error("Error fetching tasks:", err.message)
+            }
+        },
+        async fetchApplications(){
+            try {
+                const { data, error } = await supabase
+                .from("JobApplication")
+                .select("*, professional:Professional(*), job:Job(*)")
+                //.eq('status', 'Verified')
+                .order("id", { ascending: false })
+
+                if (error) throw error
+
+                this.jobApplications = data || []
+            } catch (err) {
+                console.error("Error fetching tasks:", err.message)
+            }
+        },
+        async reload(){
+            this.fetchEmployer()
+            this.fetchJobs()
+            this.fetchEmployers()
+            this.fetchProfessionals()
         }
     }
 }

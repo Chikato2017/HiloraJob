@@ -15,7 +15,7 @@
                     <p>High Skill Matches (>70%)</p>
                 </div>
                 <div class="no-of-applications">
-                    <h4 class="two">0</h4>
+                    <h4 v-if="jobApplications" class="two">{{jobApplications.length}}</h4>
                     <p>Applications Submitted</p>
                 </div>
             </div>
@@ -27,10 +27,10 @@
                 id="">
             </div>
             <div class="job-type-search">
-                <select name="job-types" id="job-types">
+                <select name="job-types" id="job-types" v-model="selectedType">
                     <option value="all" selected>All Job Types</option>
-                    <option value="full">Full Time</option>
-                    <option value="part">Part-Time</option>
+                    <option value="full-time">Full Time</option>
+                    <option value="part-time">Part Time</option>
                     <option value="remote">Remote</option>
                     <option value="contract">Contract</option>
                 </select>
@@ -44,7 +44,7 @@
             </div>
         </div>
         <div class="profiles">
-            <div class="profile" v-for="job in jobs" v-bind:key="job.id">
+            <div class="profile" v-for="job in filteredJobs" v-bind:key="job.id">
                 <div class="details">
                     <img class="img" src="../../assets/benz.jpg" alt="">
                     <div class="name-and-others">
@@ -54,7 +54,7 @@
                         </div>
                     </div>
                     <p class="status-p">
-                        VISIBLE
+                        Verified
                     </p>
                 </div>
                 <div class="discipline-tag">
@@ -65,7 +65,7 @@
                     <p class="job-type">{{job.job_type}}</p>
                 </div>
                 <div class="about">
-                    {{job.description}}
+                    {{ job.description?.length > 70 ? job.description.slice(0, 70) + '...' : job.description }}
                 </div>
                 <div class="skills">
                     <p v-for="skill in job.requirements" :key="skill.id">
@@ -75,11 +75,11 @@
 
                 </div>
                 <div class="profile-btns">
-                    <p class="time-p">Posted: <strong>
-                        {{ new Date(job.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric' }) }}
+                    <p class="time-p">Deadline: <strong>
+                        {{ new Date(job.deadline).toLocaleDateString('en-US', { month: 'long', day: 'numeric' }) }}
                         </strong>
                         </p>
-                    <div class="applied-container">
+                    <div v-if="profileDetails.is_verified?.includes('Approved')" class="applied-container">
                         <button v-if="jobApplications.some(app => app.job?.id === job.id)" 
                             class="approve" disabled>
                             Applied
@@ -88,6 +88,9 @@
                         <button v-else @click="apply(job.id)" class="approve-cmp">
                             Apply
                         </button>
+                    </div>
+                    <div class="not-approved" v-else>
+                        <p class="time-p">You cannot apply until Approved</p>
                     </div>
                 </div>
             </div>
@@ -114,7 +117,20 @@ export default {
             jobs: [],
             currentJob: null,
             profileDetails: null,
-            jobApplications: []
+            jobApplications: [],
+            selectedType: 'all',
+        }
+    },
+    computed: {
+        // 5. This computed property dynamically filters the visibility stream
+        filteredJobs() {
+            if (this.selectedType === 'all') {
+                return this.jobs;
+            }
+            // Case-insensitive match comparing choice parameters directly
+            return this.jobs.filter(job => {
+                return job.job_type?.toLowerCase() === this.selectedType.toLowerCase();
+            });
         }
     },
     async mounted(){
@@ -147,8 +163,6 @@ export default {
         } catch (err) {
             console.error("Error fetching tasks:", err.message)
         }
-        const modalApply = document.querySelector(".apply-container")
-        modalApply.style.display = "none"
     },
     methods: {
         async apply(id){
@@ -364,7 +378,7 @@ export default {
     }
 
     .salary, .job-type{
-        background:#80a3d85e;
+        background:#5983c25e;
         font-size: 11px;
         font-weight: 600;
         padding: 3px;
@@ -378,11 +392,13 @@ export default {
 
     .status-p{
         font-size: 11.5px;
-        background: #848c9c96;
+        background: #6fb9a038;
         padding: 5px 10px 5px 10px;
         border-radius: 10px;
+        border: 1px solid #10b981;
         align-self: flex-start;
         font-weight: 600;
+        color: #10b981;
     }
 
     .about{
@@ -414,6 +430,13 @@ export default {
     .time-p{
         font-size: 11.5px;
         width: 100%;
+    }
+
+    .not-approved{
+        border: 1px solid #b7becad7;
+        padding: 5px;
+        border-radius: 5px;
+        text-align: center;
     }
 
     .approve-cmp{

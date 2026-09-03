@@ -9,17 +9,6 @@
                 <p class="top-p">Browse vetted and compliance-checked engineers,
                      designers, and specialists ready for immediate hire.</p>
             </div>
-            <div class="top-block-btn">
-                <div class="job-type-search">
-                    <select name="job-types" id="job-types">
-                        <option value="all" selected>Job Type</option>
-                        <option value="full">Full Time</option>
-                        <option value="part">Part-Time</option>
-                        <option value="remote">Remote</option>
-                        <option value="contract">Contract</option>
-                    </select>
-                </div>
-            </div>
         </div>
         <div class="verification-bar">
             <div class="verification-stages">
@@ -36,18 +25,20 @@
                 id="">
             </div>
             <div class="sort-search">
-                <select name="sort" id="sort">
-                    <option value="all" selected>All Statuses</option>
-                    <option value="full">Best Skill Match</option>
-                    <option value="contract">Highest Salary</option>
+                <select name="job-types" id="job-types" v-model="selectedType">
+                    <option value="all" selected>Professional Types</option>
+                    <option value="full-time">Full Time</option>
+                    <option value="part-time">Part Time</option>
+                    <option value="remote">Remote</option>
+                    <option value="contract">Contract</option>
                 </select>
             </div>
         </div>
         <div class="profiles-container">
-            <div class="profile" v-for="professional in professionals" v-bind:key="professional.id">
+            <div class="profile" v-for="professional in filteredProfessionals" v-bind:key="professional.id">
                 <div class="details">
                     <div class="img-div">
-                        <img class="img" src="../../assets/benz.jpg" alt="">
+                        <img class="img" :src="professional.profile_img || '../../assets/Ayo.jpg'" alt="Profile picture">
                     </div>
                     <div class="name-and-others">
                         <div class="name">{{professional.full_name}}</div>
@@ -59,11 +50,11 @@
                         </div>
                     </div>
                     <p class="status-p">
-                        VISIBLE
+                        {{professional.type}}
                     </p>
                 </div>
                 <div class="about">
-                    {{professional.bio}}
+                    {{ professional.bio?.length > 100 ? professional.bio.slice(0, 100) + '...' : professional.bio }}
                 </div>
                 <div class="skills">
                     <p v-for="skill in professional.skills" :key="skill.id">
@@ -85,33 +76,31 @@
 </template>
 
 <script>
-import {supabase} from '../../supabase-client.ts'
+//import {supabase} from '../../supabase-client.ts'
 import ViewProfessional from '../modal/ViewProfessional'
 
 export default {
     name: 'EmployerTalents',
+    props: ['professionals'],
     components: {
         ViewProfessional
     },
     data(){
         return{
-            professionals: [],
             profProfile: null,
+            selectedType: 'all',
         }
     },
-    async mounted(){
-        try {
-            const { data, error } = await supabase
-            .from("Professional")
-            .select("*")
-            .eq('is_verified', 'Approved')
-            .order("id", { ascending: false })
-
-            if (error) throw error
-
-            this.professionals = data || []
-        } catch (err) {
-            console.error("Error fetching tasks:", err.message)
+    computed: {
+        // 5. This computed property dynamically filters the visibility stream
+        filteredProfessionals() {
+            if (this.selectedType === 'all') {
+                return this.professionals;
+            }
+            // Case-insensitive match comparing choice parameters directly
+            return this.professionals.filter(professional => {
+                return professional.type?.toLowerCase() === this.selectedType.toLowerCase();
+            });
         }
     },
     methods: {
@@ -367,11 +356,14 @@ export default {
     }
 
     .status-p{
-        font-size: 13.5px;
+        font-size: 13px;
         padding: 5px 10px 5px 10px;
         border-radius: 10px;
         font-weight: 600;
         width: 25%;
+        background: #8992a363;
+        align-self: center;
+        text-align: center;
     }
 
     .about{

@@ -152,7 +152,7 @@ export default {
 }
 
 .btn-primary:hover {
-  background-color: #2563eb;
+  background-color: #ff5524;
   transform: translateY(-1px);
 }
 

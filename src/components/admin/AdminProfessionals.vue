@@ -34,7 +34,7 @@
         <div class="profiles">
             <div v-for="professional in professionals" :key="professional.id" class="profile">
                 <div class="details">
-                    <img class="img" src="../../assets/Chan.png" alt="">
+                    <img class="img" :src="professional.profile_img || '../../assets/Ayo.jpg'" alt="Profile picture">
                     <div class="name-and-others">
                         <div class="name">{{professional.full_name}}</div>
                         <div class="discipline-tag">
